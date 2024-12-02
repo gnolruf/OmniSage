@@ -1,0 +1,3 @@
+llama-cpp-python
+huggingface-hub
+semantic-router[local]
