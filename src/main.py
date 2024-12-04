@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import List, Optional
 from llama_cpp import Llama
 import os
-import shutil
 from huggingface_hub import HfApi
 from semantic_router import Route
 from semantic_router.encoders import HuggingFaceEncoder
@@ -168,60 +167,24 @@ class ConfigManager:
             system_prompt=model_data.get("system_prompt")
         )
 
-class ModelManager:
-    def __init__(self, models_dir: str = "models", debug: bool = False):
-        self.models_dir = Path(models_dir)
-        self.debug = debug
-        self.models_dir.mkdir(exist_ok=True)
-
-    def get_model_path(self, model_name: str) -> Optional[Path]:
-        model_file = self.models_dir / model_name
-        return model_file if model_file.exists() else None
-
-    def save_model(self, source_path: str, model_name: str) -> Path:
-        target_path = self.models_dir / model_name
-        shutil.copy2(source_path, target_path)
-        return target_path
-
 class LlamaChat:
     def __init__(self, model_name: Optional[str] = None, n_threads: Optional[int] = None, debug: bool = False):
         self.debug = debug
         self.config_manager = ConfigManager(debug=debug)
         self.model_config = self.config_manager.get_model_config(model_name)
-        self.model_manager = ModelManager(debug=debug)
         self.query_router = QueryRouter(debug=debug)
         
-        self.model_path = self._get_or_download_model()
-        self.llm = Llama(
-            model_path=str(self.model_path),
+        if self.debug:
+            print(f"Loading model from {self.model_config.repo_id}")
+            
+        self.llm = Llama.from_pretrained(
+            repo_id=self.model_config.repo_id,
+            filename=self.model_config.model_name,
             n_ctx=self.model_config.max_context_length,
             n_threads=n_threads or os.cpu_count(),
             verbose=debug
         )
         self.conversation_history = []
-
-    def _get_or_download_model(self) -> Path:
-        local_model = self.model_manager.get_model_path(self.model_config.model_name)
-        if local_model:
-            if self.debug:
-                print(f"Loading model from local storage: {local_model}")
-            return local_model
-
-        if self.debug:
-            print(f"Downloading model from {self.model_config.repo_id}")
-        llm = Llama.from_pretrained(
-            repo_id=self.model_config.repo_id,
-            filename=self.model_config.model_name,
-            verbose=self.debug
-        )
-
-        cache_dir = Path.home() / ".cache" / "huggingface" / "hub"
-        downloaded_model = next(cache_dir.rglob(self.model_config.model_name), None)
-        
-        if not downloaded_model:
-            raise FileNotFoundError("Could not locate downloaded model in cache")
-
-        return self.model_manager.save_model(downloaded_model, self.model_config.model_name)
 
     def _format_prompt(self, user_input: str) -> str:
         pf = self.model_config.prompt_format
