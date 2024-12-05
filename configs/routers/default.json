@@ -1,0 +1,23 @@
+{
+  "encoder_type": "huggingface",
+  "encoder_name": "all-MiniLM-L6-v2",
+  "routes": [
+    {
+      "name": "programming",
+      "utterances": [
+        "How do I write a function in Python?",
+        "What's the syntax for a for loop?",
+        "How to declare variables in JavaScript?",
+        "Can you explain Object-Oriented Programming?",
+        "How do I use try-except blocks?",
+        "What are arrays in programming?",
+        "How to implement data structures?",
+        "Explain recursion in programming",
+        "What is inheritance in OOP?",
+        "How to handle exceptions in code?"
+      ],
+      "description": "Programming and software development related questions",
+      "score_threshold": 0.3
+    }
+  ]
+}
