@@ -9,6 +9,25 @@ from semantic_router import Route
 from semantic_router.encoders import HuggingFaceEncoder
 from semantic_router.layer import RouteLayer
 
+@dataclass
+class ModelPromptFormat:
+    system_prefix: str = ""
+    system_suffix: str = ""
+    user_prefix: str = "User: "
+    user_suffix: str = ""
+    assistant_prefix: str = "Assistant: "
+    assistant_suffix: str = ""
+
+@dataclass
+class ModelConfig:
+    model_name: str
+    model_file_name: str
+    repo_id: str
+    max_context_length: int
+    stop_words: List[str]
+    prompt_format: ModelPromptFormat
+    system_prompt: Optional[str] = None
+
 class QueryRouter:
     def __init__(self, debug: bool = False):
         self.debug = debug
@@ -48,25 +67,6 @@ class QueryRouter:
             print(f"Router result: {result}")
         return result.name == "programming" if result else False
     
-@dataclass
-class ModelPromptFormat:
-    system_prefix: str = ""
-    system_suffix: str = ""
-    user_prefix: str = "User: "
-    user_suffix: str = ""
-    assistant_prefix: str = "Assistant: "
-    assistant_suffix: str = ""
-
-@dataclass
-class ModelConfig:
-    model_name: str
-    model_file_name: str
-    repo_id: str
-    max_context_length: int
-    stop_words: List[str]
-    prompt_format: ModelPromptFormat
-    system_prompt: Optional[str] = None
-
 class ConfigManager:
     def __init__(self, config_path: str = "config.json", debug: bool = False):
         self.config_path = Path(config_path)
