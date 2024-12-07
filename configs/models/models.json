@@ -1,0 +1,40 @@
+{
+  "model_groups": {
+    "default": {
+      "model_name": "llama-3.2-3b-instruct",
+      "model_file_name": "llama-3.2-3b-instruct-q2_k.gguf",
+      "repo_id": "unsloth/Llama-3.2-3B-Instruct-GGUF",
+      "max_context_length": 2048,
+      "stop_words": [
+        "<|eot_id|>"
+      ],
+      "system_prompt": "You are a helpful AI assistant. You provide accurate, helpful responses in a clear and natural way.",
+      "prompt_format": {
+        "system_prefix": "<|start_header_id|>system<|end_header_id|>\n",
+        "system_suffix": "<|eot_id|>",
+        "user_prefix": "<|start_header_id|>user<|end_header_id|>\n",
+        "user_suffix": "<|eot_id|>",
+        "assistant_prefix": "<|start_header_id|>assistant<|end_header_id|>\n",
+        "assistant_suffix": "<|eot_id|>"
+      }
+    },
+    "programming": {
+      "model_name": "qwen2.5-3b-instruct",
+      "model_file_name": "qwen2.5-3b-instruct-q2_k.gguf",
+      "repo_id": "Qwen/Qwen2.5-3B-Instruct-GGUF",
+      "max_context_length": 2048,
+      "stop_words": [
+        "<|im_end|>"
+      ],
+      "system_prompt": "You are a helpful programming assistant focused on providing accurate and detailed coding help.",
+      "prompt_format": {
+        "system_prefix": "<|im_start|>system\n",
+        "system_suffix": "<|im_end|>",
+        "user_prefix": "<|im_start|>user\n",
+        "user_suffix": "<|im_end|>",
+        "assistant_prefix": "<|im_start|>assistant\n",
+        "assistant_suffix": "<|im_end|>"
+      }
+    }
+  }
+}
