@@ -43,9 +43,12 @@ class ChatSession:
         if config.system_prompt:
             formatted.append(f"{pf.system_prefix}{config.system_prompt}{pf.system_suffix}")
         
+        # Format conversation history properly
         for entry in self.conversation_history:
-            formatted.append(f"{pf.user_prefix}{entry['user']}{pf.user_suffix}")
-            formatted.append(f"{pf.assistant_prefix}{entry['assistant']}{pf.assistant_suffix}")
+            if "user" in entry:
+                formatted.append(f"{pf.user_prefix}{entry['user']}{pf.user_suffix}")
+            if "assistant" in entry:
+                formatted.append(f"{pf.assistant_prefix}{entry['assistant']}{pf.assistant_suffix}")
         
         formatted.append(f"{pf.user_prefix}{user_input}{pf.user_suffix}")
         formatted.append(f"{pf.assistant_prefix}")
@@ -70,7 +73,7 @@ class ChatSession:
         
         if stream:
             def chunk_generator():
-                previous_text = ""
+                full_response = []
                 for chunk in model(
                     full_prompt,
                     max_tokens=max_tokens,
@@ -82,13 +85,18 @@ class ChatSession:
                     if self.debug:
                         print(f"Debug: Raw chunk received: {repr(chunk_text)}")
                     
-                    # Only yield the new part of the text
-                    new_text = chunk_text
-                    if new_text:
+                    if chunk_text:
                         if self.debug:
-                            print(f"Debug: Yielding new text: {repr(new_text)}")
-                        yield new_text
+                            print(f"Debug: Yielding new text: {repr(chunk_text)}")
+                        full_response.append(chunk_text)
+                        yield chunk_text
                         time.sleep(0.01)  # Small delay to help with streaming
+                
+                # After generating the full response, add it to conversation history
+                self.conversation_history.append({
+                    "user": prompt,
+                    "assistant": "".join(full_response).strip()
+                })
             
             return chunk_generator()
         else:
@@ -105,6 +113,14 @@ class ChatSession:
                 chunk_text = chunk["choices"][0]["text"]
                 print(chunk_text, end="", flush=True)
                 response_chunks.append(chunk_text)
-                
+            
+            full_response = "".join(response_chunks).strip()
+            
+            # Add the exchange to conversation history
+            self.conversation_history.append({
+                "user": prompt,
+                "assistant": full_response
+            })
+            
             print()
-            return "".join(response_chunks).strip()
+            return full_response
