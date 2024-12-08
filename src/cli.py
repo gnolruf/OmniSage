@@ -3,7 +3,6 @@ from typing import Optional
 import requests
 from datetime import datetime
 from client import LlamaChatClient, Message
-from database_manager import DatabaseManager
 
 def format_chat_list(chats: list[dict]) -> str:
     """Format chat list for display."""
