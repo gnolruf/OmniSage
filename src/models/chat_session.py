@@ -1,4 +1,5 @@
-from typing import Dict, List, Optional
+import time
+from typing import Dict, List, Optional, Union, Generator
 from models.model_manager import ModelManager
 from routing.query_router import QueryRouter
 
@@ -51,9 +52,14 @@ class ChatSession:
         
         return "\n".join(formatted)
 
-    def generate_response(self, prompt: str, max_tokens: int = 512, temperature: float = 0.7) -> str:
-        """Generate a response using the current model."""
-        # For first message, select model based on content
+    def generate_response(
+        self, 
+        prompt: str, 
+        max_tokens: int = 512, 
+        temperature: float = 0.7,
+        stream: bool = False
+    ) -> Union[str, Generator[str, None, None]]:
+        """Generate a response using the current model with enhanced debugging."""
         if not self.model_group:
             self.model_group = self._select_model_group(prompt)
             
@@ -62,48 +68,43 @@ class ChatSession:
         
         full_prompt = self._format_prompt(prompt)
         
-        response_chunks = []
-        print("\nAssistant: ", end="", flush=True)
-        
-        for chunk in model(
-            full_prompt,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            stop=config.stop_words,
-            stream=True
-        ):
-            chunk_text = chunk["choices"][0]["text"]
-            print(chunk_text, end="", flush=True)
-            response_chunks.append(chunk_text)
+        if stream:
+            def chunk_generator():
+                previous_text = ""
+                for chunk in model(
+                    full_prompt,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    stop=config.stop_words,
+                    stream=True
+                ):
+                    chunk_text = chunk["choices"][0]["text"]
+                    if self.debug:
+                        print(f"Debug: Raw chunk received: {repr(chunk_text)}")
+                    
+                    # Only yield the new part of the text
+                    new_text = chunk_text
+                    if new_text:
+                        if self.debug:
+                            print(f"Debug: Yielding new text: {repr(new_text)}")
+                        yield new_text
+                        time.sleep(0.01)  # Small delay to help with streaming
             
-        print()
-        return "".join(response_chunks).strip()
-
-    def chat(self):
-        """Start an interactive chat session."""
-        print("\nWelcome to LlamaChat!")
-        print("Type 'quit' or 'exit' to end the conversation")
-        print("Type 'clear' to clear the conversation history\n")
-        
-        while True:
-            user_input = input("\nYou: ").strip()
+            return chunk_generator()
+        else:
+            response_chunks = []
+            print("\nAssistant: ", end="", flush=True)
             
-            if user_input.lower() in ['quit', 'exit']:
-                print("\nGoodbye!")
-                break
-            elif user_input.lower() == 'clear':
-                self.conversation_history = []
-                self.model_group = None  # Reset model selection for next input
-                print("\nConversation history cleared.")
-                continue
-            elif not user_input:
-                continue
-            
-            try:
-                response = self.generate_response(user_input)
-                self.conversation_history.append({
-                    'user': user_input,
-                    'assistant': response
-                })
-            except Exception as e:
-                print(f"\nError: {str(e)}")
+            for chunk in model(
+                full_prompt,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                stop=config.stop_words,
+                stream=True
+            ):
+                chunk_text = chunk["choices"][0]["text"]
+                print(chunk_text, end="", flush=True)
+                response_chunks.append(chunk_text)
+                
+            print()
+            return "".join(response_chunks).strip()
