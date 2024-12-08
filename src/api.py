@@ -8,6 +8,7 @@ from typing import List, Optional, AsyncGenerator
 import uvicorn
 import json
 
+from config.database_config import DatabaseConfig
 from models.model_manager import ModelManager
 from routing.query_router import QueryRouter
 from models.chat_session import ChatSession
@@ -26,7 +27,9 @@ async def lifespan(app: FastAPI):
     print("Initializing services...")
     model_manager = ModelManager(debug=False)
     query_router = QueryRouter(debug=False)
-    db_manager = DatabaseManager("postgresql://postgres:23441873@localhost:5432/llamachat")
+
+    db_config = DatabaseConfig()
+    db_manager = DatabaseManager(db_config.get_connection_string())
     
     # Pre-load all models
     print("Loading models...")
