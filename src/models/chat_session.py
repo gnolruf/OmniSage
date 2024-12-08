@@ -2,22 +2,37 @@ import time
 from typing import Dict, List, Optional, Union, Generator
 from models.model_manager import ModelManager
 from routing.query_router import QueryRouter
+from database_manager import DatabaseManager
 
 class ChatSession:
-    def __init__(self, model_manager: ModelManager, debug: bool = False):
+    def __init__(
+        self,
+        model_manager: ModelManager,
+        db_manager: DatabaseManager,
+        chat_id: Optional[int] = None,
+        debug: bool = False
+    ):
         """
-        Initialize a chat session that will dynamically select its initial model.
+        Initialize a chat session with database support.
         
         Args:
             model_manager: ModelManager instance with required models loaded
+            db_manager: DatabaseManager instance for persistence
+            chat_id: Optional ID of existing chat to load
             debug: Enable debug output
         """
         self.model_manager = model_manager
+        self.db_manager = db_manager
         self.debug = debug
         self.query_router = QueryRouter(debug=debug)
         self.model_group: Optional[str] = None
         self.conversation_history: List[Dict[str, str]] = []
-
+        self.chat_id = chat_id
+        
+        # Load existing chat if chat_id provided
+        if chat_id:
+            self._load_chat_history(chat_id)
+    
     def _select_model_group(self, query: str) -> str:
         """Use query router to select appropriate model group."""
         is_programming = self.query_router.is_programming_question(query)
@@ -31,10 +46,25 @@ class ChatSession:
             
         return selected_group
 
+    def _load_chat_history(self, chat_id: int):
+        """Load conversation history from database."""
+        messages = self.db_manager.get_chat_messages(chat_id)
+        self.conversation_history = [
+            {msg["role"]: msg["content"]} for msg in messages
+        ]
+        
+        # Set model_group from last assistant message if available
+        assistant_messages = [
+            msg for msg in messages 
+            if msg["role"] == "assistant" and msg["model_group"]
+        ]
+        if assistant_messages:
+            self.model_group = assistant_messages[-1]["model_group"]
+    
     def _format_prompt(self, user_input: str) -> str:
         """Format prompt based on the current model group."""
         if not self.model_group:
-            raise ValueError("No model group selected. This shouldn't happen.")
+            self.model_group = self._select_model_group(user_input)
             
         config = self.model_manager.get_config(self.model_group)
         pf = config.prompt_format
@@ -82,45 +112,51 @@ class ChatSession:
                     stream=True
                 ):
                     chunk_text = chunk["choices"][0]["text"]
-                    if self.debug:
-                        print(f"Debug: Raw chunk received: {repr(chunk_text)}")
-                    
                     if chunk_text:
-                        if self.debug:
-                            print(f"Debug: Yielding new text: {repr(chunk_text)}")
                         full_response.append(chunk_text)
                         yield chunk_text
-                        time.sleep(0.01)  # Small delay to help with streaming
+                        time.sleep(0.01)
                 
-                # After generating the full response, add it to conversation history
-                self.conversation_history.append({
-                    "user": prompt,
-                    "assistant": "".join(full_response).strip()
-                })
+                # Save to database if we have a chat_id
+                if self.chat_id:
+                    complete_response = "".join(full_response).strip()
+                    self.db_manager.save_message(
+                        self.chat_id,
+                        "assistant",
+                        complete_response,
+                        self.model_group
+                    )
+                    
+                    # Update conversation history
+                    self.conversation_history.extend([
+                        {"user": prompt},
+                        {"assistant": complete_response}
+                    ])
             
             return chunk_generator()
         else:
-            response_chunks = []
-            print("\nAssistant: ", end="", flush=True)
-            
-            for chunk in model(
+            response = model(
                 full_prompt,
                 max_tokens=max_tokens,
                 temperature=temperature,
                 stop=config.stop_words,
-                stream=True
-            ):
-                chunk_text = chunk["choices"][0]["text"]
-                print(chunk_text, end="", flush=True)
-                response_chunks.append(chunk_text)
+                stream=False
+            )
+            complete_response = response["choices"][0]["text"].strip()
             
-            full_response = "".join(response_chunks).strip()
+            # Save to database if we have a chat_id
+            if self.chat_id:
+                self.db_manager.save_message(
+                    self.chat_id,
+                    "assistant",
+                    complete_response,
+                    self.model_group
+                )
             
-            # Add the exchange to conversation history
-            self.conversation_history.append({
-                "user": prompt,
-                "assistant": full_response
-            })
+            # Update conversation history
+            self.conversation_history.extend([
+                {"user": prompt},
+                {"assistant": complete_response}
+            ])
             
-            print()
-            return full_response
+            return complete_response
