@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-from typing import Optional, Dict
+from typing import Dict
 from functools import lru_cache
 
 class DatabaseConfig:

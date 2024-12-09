@@ -1,10 +1,4 @@
--- Note: This must be run as a postgres superuser
-CREATE DATABASE llamachat;
-
--- Connect to the database
-\c llamachat
-
--- Create tables
+-- Create tables if they don't exist
 CREATE TABLE IF NOT EXISTS chats (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
@@ -23,10 +17,10 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 -- Create index for faster chat message retrieval
-CREATE INDEX idx_messages_chat_id ON messages(chat_id);
+CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
 
 -- Create index for timestamp-based queries
-CREATE INDEX idx_chats_updated_at ON chats(updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chats_updated_at ON chats(updated_at DESC);
 
 -- Create a function to update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -38,6 +32,7 @@ END;
 $$ language 'plpgsql';
 
 -- Create a trigger to automatically update the updated_at column
+DROP TRIGGER IF EXISTS update_chats_updated_at ON chats;
 CREATE TRIGGER update_chats_updated_at
     BEFORE UPDATE ON chats
     FOR EACH ROW
