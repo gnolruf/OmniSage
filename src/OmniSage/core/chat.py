@@ -1,8 +1,9 @@
 import time
 from typing import Dict, List, Optional, Union, Generator
-from models.model_manager import ModelManager
-from routing.query_router import QueryRouter
-from database_manager import DatabaseManager
+
+from src.OmniSage.models.manager import ModelManager
+from src.OmniSage.routers.query import QueryRouter
+from src.OmniSage.database.manager import DatabaseManager
 
 class ChatSession:
     def __init__(

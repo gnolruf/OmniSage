@@ -1,8 +1,7 @@
 import json
 from pathlib import Path
-from typing import Optional, Dict
 
-from config.model_config import ModelConfig, ModelPromptFormat
+from src.OmniSage.models.config import ModelConfig, ModelPromptFormat
 
 class ConfigManager:
     def __init__(self, config_dir: str = "configs", debug: bool = False):

@@ -15,7 +15,7 @@ class LlamaChatClient:
     def create_chat(self, title: str) -> dict:
         """Create a new chat session."""
         response = requests.post(
-            f"{self.base_url}/chats",
+            f"{self.base_url}/chat/chats",
             json={"title": title}
         )
         response.raise_for_status()
@@ -23,19 +23,19 @@ class LlamaChatClient:
     
     def list_chats(self) -> list:
         """Get list of all chats."""
-        response = requests.get(f"{self.base_url}/chats")
+        response = requests.get(f"{self.base_url}/chat/chats")
         response.raise_for_status()
         return response.json()
     
     def get_chat_messages(self, chat_id: int) -> list:
         """Get all messages for a specific chat."""
-        response = requests.get(f"{self.base_url}/chats/{chat_id}/messages")
+        response = requests.get(f"{self.base_url}/chat/chats/{chat_id}/messages")
         response.raise_for_status()
         return response.json()
     
     def delete_chat(self, chat_id: int):
         """Delete a chat session."""
-        response = requests.delete(f"{self.base_url}/chats/{chat_id}")
+        response = requests.delete(f"{self.base_url}/chat/chats/{chat_id}")
         response.raise_for_status()
         return response.json()
     

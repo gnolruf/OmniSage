@@ -1,7 +1,8 @@
 from typing import Dict, Optional
 import os
 from llama_cpp import Llama
-from config.config_manager import ConfigManager
+
+from src.OmniSage.config.manager import ConfigManager
 
 class ModelManager:
     def __init__(self, n_threads: Optional[int] = None, debug: bool = False):
