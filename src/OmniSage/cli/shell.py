@@ -7,7 +7,7 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.formatted_text import HTML, FormattedText
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.completion import WordCompleter
-from src.OmniSage.core.client import LlamaChatClient, Message
+from src.omnisage.core.client import LlamaChatClient, Message
 
 class CommandCompleter(WordCompleter):
     """Custom command completer that only activates for commands."""
@@ -319,7 +319,7 @@ class OmniShell:
             for chunk in self.client.chat_stream(
                 self.conversation_history,
                 chat_id=self.current_chat_id,
-                max_tokens=512,
+                max_tokens=None,  # Let server use model's max_output_length
                 temperature=0.7
             ):
                 if isinstance(chunk, dict):

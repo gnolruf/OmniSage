@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from src.OmniSage.models.config import ModelConfig, ModelPromptFormat
+from src.omnisage.models.config import ModelConfig, ModelPromptFormat
 
 class ConfigManager:
     def __init__(self, config_dir: str = "configs", debug: bool = False):
@@ -32,7 +32,8 @@ class ConfigManager:
                     "model_name": "llama-3.2-3b-instruct",
                     "model_file_name": "llama-3.2-3b-instruct-q2_k.gguf",
                     "repo_id": "unsloth/Llama-3.2-3B-Instruct-GGUF",
-                    "max_context_length": 2048,
+                    "context_window": 128000,
+                    "max_output_length": 2048,
                     "stop_words": ["<|eot_id|>"],
                     "system_prompt": "You are a helpful AI assistant. You provide accurate, helpful responses in a clear and natural way.",
                     "prompt_format": {
@@ -48,7 +49,8 @@ class ConfigManager:
                     "model_name": "qwen2.5-3b-instruct",
                     "model_file_name": "qwen2.5-3b-instruct-q2_k.gguf",
                     "repo_id": "Qwen/Qwen2.5-3B-Instruct-GGUF",
-                    "max_context_length": 2048,
+                    "context_window": 32000,
+                    "max_output_length": 8000,
                     "stop_words": ["<|im_end|>"],
                     "system_prompt": "You are a helpful programming assistant focused on providing accurate and detailed coding help.",
                     "prompt_format": {
@@ -62,7 +64,7 @@ class ConfigManager:
                 }
             }
         }
-
+        
         with open(config_path, "w") as f:
             json.dump(default_config, f, indent=2)
 
@@ -89,7 +91,8 @@ class ConfigManager:
             model_name=model_data["model_name"],
             model_file_name=model_data["model_file_name"],
             repo_id=model_data["repo_id"],
-            max_context_length=model_data["max_context_length"],
+            context_window=model_data["context_window"], 
+            max_output_length=model_data["max_output_length"], 
             stop_words=model_data["stop_words"],
             prompt_format=prompt_format,
             system_prompt=model_data.get("system_prompt")

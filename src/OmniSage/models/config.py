@@ -15,7 +15,8 @@ class ModelConfig:
     model_name: str 
     model_file_name: str  
     repo_id: str
-    max_context_length: int
+    context_window: int
+    max_output_length: int
     stop_words: List[str]
     prompt_format: ModelPromptFormat
     system_prompt: Optional[str] = None

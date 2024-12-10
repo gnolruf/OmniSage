@@ -2,7 +2,7 @@ import asyncio
 import json
 from typing import AsyncGenerator
 
-from src.OmniSage.core.chat import ChatSession
+from src.omnisage.core.chat import ChatSession
 
 async def generate_streaming_response(
     chat_session: ChatSession,

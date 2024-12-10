@@ -61,7 +61,7 @@ class ChatRequest(BaseModel):
     """Schema for chat completion requests."""
     messages: List[Message] = Field(..., description="List of conversation messages")
     chat_id: Optional[int] = Field(None, description="ID of the chat session")
-    max_tokens: Optional[int] = Field(512, description="Maximum tokens to generate")
+    max_tokens: Optional[int] = None  # Remove default value
     temperature: Optional[float] = Field(0.7, description="Temperature for response generation")
 
     class Config:
@@ -71,7 +71,7 @@ class ChatRequest(BaseModel):
                     {"role": "user", "content": "Hello, how can you help me today?"}
                 ],
                 "chat_id": 1,
-                "max_tokens": 512,
+                "max_tokens": None,
                 "temperature": 0.7
             }
         }

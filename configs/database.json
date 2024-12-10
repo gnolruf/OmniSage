@@ -3,5 +3,5 @@
     "port": 5432,
     "database": "llamachat",
     "user": "postgres",
-    "password": "23441873"
+    "password": ""
 }

@@ -2,7 +2,7 @@ import argparse
 from typing import Optional
 import requests
 from datetime import datetime
-from src.OmniSage.core.client import LlamaChatClient, Message
+from src.omnisage.core.client import LlamaChatClient, Message
 
 def format_chat_list(chats: list[dict]) -> str:
     """Format chat list for display."""

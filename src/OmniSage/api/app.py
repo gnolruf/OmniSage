@@ -2,9 +2,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.OmniSage.models.manager import ModelManager
-from src.OmniSage.database.manager import DatabaseManager
-from src.OmniSage.database.config import DatabaseConfig
+from src.omnisage.models.manager import ModelManager
+from src.omnisage.database.manager import DatabaseManager
+from src.omnisage.database.config import DatabaseConfig
 
 # Global instances
 model_manager = None
@@ -16,12 +16,9 @@ async def lifespan(app: FastAPI):
     # Startup
     print("Initializing services...")
     
-    # Initialize model manager and load models
+    # Initialize model manager without loading models
     app.state.model_manager = ModelManager(debug=False)
-    print("Loading models...")
-    for group in app.state.model_manager.available_groups():
-        print(f"Loading {group} model...")
-        app.state.model_manager.load_model(group)
+    print("Model manager initialized (models will be loaded on demand)")
     
     # Initialize database connection
     db_config = DatabaseConfig()
@@ -52,7 +49,7 @@ app.add_middleware(
 )
 
 # Import and include routers after app creation
-from src.OmniSage.api.routes import chat
+from src.omnisage.api.routes import chat
 app.include_router(chat.router)
 
 def start_server(host: str = "0.0.0.0", port: int = 8000):

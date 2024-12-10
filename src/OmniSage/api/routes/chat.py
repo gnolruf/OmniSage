@@ -2,17 +2,16 @@ from fastapi import APIRouter, HTTPException, Request
 from typing import List
 from fastapi.responses import StreamingResponse
 
-from src.OmniSage.api.models.schemas import (
+from src.omnisage.api.models.schemas import (
     Message,
     ChatMetadata,
     Chat,
     ChatRequest
 )
-from src.OmniSage.api.utils import generate_streaming_response
-from src.OmniSage.core.chat import ChatSession
-from src.OmniSage.models.manager import ModelManager
-from src.OmniSage.database.manager import DatabaseManager
-from src.OmniSage.database.config import DatabaseConfig
+from src.omnisage.api.utils import generate_streaming_response
+from src.omnisage.core.chat import ChatSession
+from src.omnisage.database.manager import DatabaseManager
+from src.omnisage.database.config import DatabaseConfig
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -22,7 +21,7 @@ def get_db_manager():
     return DatabaseManager(db_config.get_connection_string())
 
 @router.post("/stream")
-async def chat_stream(request: Request, chat_request: ChatRequest):  # Add Request parameter
+async def chat_stream(request: Request, chat_request: ChatRequest):
     """Stream chat responses chunk by chunk."""
     try:
         # Get the model_manager from app state
