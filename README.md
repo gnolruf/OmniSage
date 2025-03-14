@@ -7,7 +7,7 @@
 
 ---
 
-OmniSage is a powerful framework designed for serving multiple local language models (LLMs) with intelligent routing capabilities. It supports running multiple models simultaneously, with each model specialized for specific types of queries, backed by a PostgreSQL database for conversation persistence.
+OmniSage is a framework designed for serving multiple local language models (LLMs) with semantic or heuristic routing. Supports running multiple models simultaneously, with each model specialized for specific types of queries, backed by a PostgreSQL database for conversation persistence.
 
 ## Prerequisites
 
