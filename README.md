@@ -7,6 +7,8 @@
 
 ---
 
+### Note: This project has been archived. In the emerging and ever changing world of model routing and local model deployment, this project is eclipsed by several other offerings that have much more support. Please use this repository for educational purposes, or fork to continue work on your own.
+
 OmniSage is a framework designed for serving multiple local language models (LLMs) with semantic or heuristic routing. Supports running multiple models simultaneously, with each model specialized for specific types of queries, backed by a PostgreSQL database for conversation persistence.
 
 ## Prerequisites
